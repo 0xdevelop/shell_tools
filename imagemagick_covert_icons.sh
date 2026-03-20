@@ -142,10 +142,21 @@ generate_web() {
     local d="$OUT/web"
     magick "$INPUT" -resize 16x16 "$d"/favicon-16x16.png
     magick "$INPUT" -resize 32x32 "$d"/favicon-32x32.png
+    magick "$INPUT" -resize 48x48 "$d"/favicon-48x48.png
+    magick "$INPUT" -resize 64x64 "$d"/favicon-64x64.png
     magick "$INPUT" -resize 192x192 "$d"/icon-192.png
     magick "$INPUT" -resize 512x512 "$d"/icon-512.png
     magick "$INPUT" -resize 512x512 "$d"/icon-512.webp
-    magick "$INPUT" -resize 16x16 -resize 32x32 -resize 48x48 "$d"/favicon.ico
+
+    # =========================
+    # 已修正：标准 favicon.ico 全尺寸
+    # =========================
+    magick "$INPUT" \
+      -resize 16x16 \
+      -resize 32x32 \
+      -resize 48x48 \
+      -resize 64x64 \
+      "$d"/favicon.ico
 }
 
 generate_linux() {
@@ -177,7 +188,6 @@ generate_binary() {
     local d="$OUT/binary"
     magick "$INPUT" "$d"/icon.bmp
     magick "$INPUT" "$d"/icon.tiff
-    magick "$INPUT" "$d"/icon.raw
 }
 
 write_bridge_report() {
