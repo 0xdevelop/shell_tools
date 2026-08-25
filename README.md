@@ -26,6 +26,7 @@
 - [12. Checke ssl/tls cert express date](#12-checke-ssltls-cert-express-date)
 - [Ubuntu20+ add user](#ubuntu20-add-user)
 - [use`redis_persistence_setup` 生产 Redis 持久化与认证配置](#useredis_persistence_setup-生产-redis-持久化与认证配置)
+- [use`imagemagick_covert_icons` Logo 转多尺寸图标](#useimagemagick_covert_icons-logo-转多尺寸图标)
 
 <!-- /TOC -->
 
@@ -189,3 +190,15 @@ sudo ./redis_persistence_setup.sh /path/to/redis.conf
 - ACL：命名用户 + SHA-256 密码 hash（明文不落盘）、关 default、禁 requirepass；兼容外部 aclfile 与 conf 内 user（互斥检查）。
 - 环境体检只警告不改值：bind 全接口 / protected-mode off / 副本实例关 default 会断主从认证。
 - **不自动重启 Redis**；不改 `dir`、不递归改 `include`、相对路径 aclfile 直接拒绝。
+
+# use`imagemagick_covert_icons` Logo 转多尺寸图标
+
+## 一键调用命令
+```
+wget --no-check-certificate --secure-protocol=TLSv1_2 https://raw.githubusercontent.com/0xdevelop/shell_tools/main/imagemagick_covert_icons.sh && chmod a+x ./imagemagick_covert_icons.sh && ./imagemagick_covert_icons.sh
+```
+
+## 支持自定义 Logo 路径
+```
+wget --no-check-certificate --secure-protocol=TLSv1_2 https://raw.githubusercontent.com/0xdevelop/shell_tools/main/imagemagick_covert_icons.sh && chmod a+x ./imagemagick_covert_icons.sh && ./imagemagick_covert_icons.sh ./my_logo.png
+```
