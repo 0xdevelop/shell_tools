@@ -180,7 +180,9 @@ first_active_line() {
 }
 
 rewrite_directive() {
-  local file="$1" key="$2" replacement="$3" tmp="${file}.rewrite.$$"
+  local file="$1" key="$2" replacement="$3" tmp
+  # local 一行内引用同行刚声明的变量在 set -u 下跨 bash 版本不可靠，一律拆行
+  tmp="${file}.rewrite.$$"
   awk -v k="$key" -v repl="$replacement" '
     function active_key(raw, key, s, a) {
       s=raw
@@ -235,7 +237,8 @@ set_directive() {
 }
 
 comment_out_directive() {
-  local file="$1" key="$2" active tmp="${file}.rewrite.$$"
+  local file="$1" key="$2" active tmp
+  tmp="${file}.rewrite.$$"
   active="$(count_active_key "$file" "$key")"
   if [[ "$active" -eq 0 ]]; then
     info "$key: 没有生效配置，无需处理。"
@@ -430,7 +433,8 @@ if [[ "$ENABLE_ACL" =~ ^[Yy]$ ]]; then
   }
 
   set_acl_user() {
-    local file="$1" user="$2" desired="$3" count current tmp="${file}.rewrite.$$"
+    local file="$1" user="$2" desired="$3" count current tmp
+    tmp="${file}.rewrite.$$"
     count="$(count_acl_user "$file" "$user")"
     current="$(first_acl_user_line "$file" "$user" || true)"
 
