@@ -6,6 +6,7 @@
   - [1.2. ubuntu20+adduser\_to\_login.sh —— 添加可登录用户](#12-ubuntu20adduser_to_loginsh--添加可登录用户)
   - [1.3. create\_restricted\_user.sh —— 添加受限用户](#13-create_restricted_usersh--添加受限用户)
   - [1.4. optimize\_network.sh —— 系统网络调优（51200 并发）](#14-optimize_networksh--系统网络调优51200-并发)
+  - [1.5. ubuntu\_cn\_dir\_to\_en\_dir.sh —— 中文用户目录改英文](#15-ubuntu_cn_dir_to_en_dirsh--中文用户目录改英文)
 - [2. 软件安装](#2-软件安装)
   - [2.1. install\_softs.sh —— 常用软件一键聚合安装](#21-install_softssh--常用软件一键聚合安装)
   - [2.2. install\_docker.sh](#22-install_dockersh)
@@ -73,6 +74,21 @@ wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_to
 ```
 wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/optimize_network.sh && chmod a+x ./optimize_network.sh && ./optimize_network.sh
 ```
+
+## 1.5. ubuntu_cn_dir_to_en_dir.sh —— 中文用户目录改英文
+
+把中文 Ubuntu 桌面的 XDG 用户目录（桌面/下载/文档等）迁移为英文（Desktop/Downloads/Documents 等），
+终端里 cd 不用再敲中文。内容先复制进英文目录，中文目录整体移入
+`~/.xdg-user-dirs-cn-backup-<时间戳>/` 备份——不删任何数据，重复执行安全。
+
+```
+wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/ubuntu_cn_dir_to_en_dir.sh && chmod a+x ./ubuntu_cn_dir_to_en_dir.sh && ./ubuntu_cn_dir_to_en_dir.sh
+```
+
+- 以目标桌面用户身份直接执行，**不要 sudo**（sudo 后 HOME 指向 /root，脚本会直接拒绝）。
+- 默认交互确认后才动目录；无人值守加 `-y`。
+- 同名文件以中文目录一侧为准合并进英文目录；原件始终完整留在备份目录。
+- 执行完注销重登（或 reboot）生效；确认英文目录内容无缺后可自行删除备份目录。
 
 # 2. 软件安装
 
