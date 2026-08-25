@@ -25,6 +25,7 @@
     - [11.4. Download Appoint Release Assets](#114-download-appoint-release-assets)
 - [12. Checke ssl/tls cert express date](#12-checke-ssltls-cert-express-date)
 - [Ubuntu20+ add user](#ubuntu20-add-user)
+- [use`redis_persistence_setup` 生产 Redis 持久化与认证配置](#useredis_persistence_setup-生产-redis-持久化与认证配置)
 
 <!-- /TOC -->
 
@@ -150,3 +151,41 @@ wget --no-check-certificate https://raw.githubusercontent.com/george012/gt_scrip
 ```
 wget --no-check-certificate https://raw.githubusercontent.com/george012/gt_script/master/create_restricted_user.sh && chmod a+x ./create_restricted_user.sh && ./create_restricted_user.sh <username> "<ssh_public_key>"
 ```
+# use`redis_persistence_setup` 生产 Redis 持久化与认证配置
+
+生产机 Redis（7/8）持久化配置器：开启 RDB + AOF 双持久化、驱逐策略钉死 `noeviction`
+（适配「不用 TTL、数据生命周期由程序显式管理」的存储型用法——任何 LRU 驱逐都等于静默丢数据）、
+可选启用 ACL 命名用户并关闭 default。交互式：全部变更先 diff 预览、确认后才写入，不适合无人值守。
+
+## 一键调用（root；不带参数自动找 /etc/redis/redis.conf 等常见路径，或显式传 conf 路径）
+
+```
+wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/gt_script/main/redis_persistence_setup.sh && chmod a+x ./redis_persistence_setup.sh && sudo ./redis_persistence_setup.sh
+```
+
+```
+sudo ./redis_persistence_setup.sh /path/to/redis.conf
+```
+
+## 改参数只动脚本头部「配置区」，执行段不需要读
+
+| 变量 | 含义 |
+| --- | --- |
+| `REDIS_DIRECTIVES` | 持久化与内存目标值数组，`key\|目标行` 一行一项、行行带注释；加新指令往数组添一行即可 |
+| `REDIS_DIRECTIVES_V7` | 仅 Redis >=7 生效的指令（multipart AOF 目录） |
+| `REDIS_MAXMEMORY` | 空 = 不改机器现状；填值（如 `8gb`）才写。noeviction 下内存满表现为写报错，设了上限必须配容量告警 |
+| `ACL_USER_RULES` | ACL 用户权限，默认 `~* &* +@all`；生产建议收窄：`~* &* +@all -flushall -flushdb -debug -shutdown` |
+| `ACL_MIN_PASSWORD_LENGTH` | 密码最短长度，短于此值二次确认 |
+| `AOF_WAIT_TIMEOUT_SECONDS` | 运行时开启 AOF 后等待 rewrite 收敛的超时 |
+| `REDIS_MIN_MAJOR` | 支持的最低主版本 |
+
+`appendfsync` 默认 `everysec`（掉电最多丢 1 秒已确认写）；账本级零窗口改 `always`，吞吐降一个量级。
+
+## 行为边界
+
+- 原配置硬备份 + cmp 校验（备份失败绝不动原文件）；原子替换 + 写后 SHA-256 复核。
+- 对运行中的实例安全执行 RDB→AOF 切换（CONFIG SET 后等 rewrite 完成、带超时）——
+  避免「只改配置就重启 → 空 AOF 把存量数据清零」。
+- ACL：命名用户 + SHA-256 密码 hash（明文不落盘）、关 default、禁 requirepass；兼容外部 aclfile 与 conf 内 user（互斥检查）。
+- 环境体检只警告不改值：bind 全接口 / protected-mode off / 副本实例关 default 会断主从认证。
+- **不自动重启 Redis**；不改 `dir`、不递归改 `include`、相对路径 aclfile 直接拒绝。
