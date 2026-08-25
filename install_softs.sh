@@ -5,15 +5,15 @@ SCRIPT_NAME=$(basename $0)
 PROJECT_NAME=install_softs
 
 install_redis(){
-    wget --no-check-certificate https://raw.githubusercontent.com/george012/gt_script/master/install_redis.sh && chmod a+x ./install_redis.sh && ./install_redis.sh
+    wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/install_redis.sh && chmod a+x ./install_redis.sh && ./install_redis.sh
 }
 
 install_docker(){
-    wget --no-check-certificate https://raw.githubusercontent.com/george012/gt_script/master/install_docker.sh && chmod a+x ./install_docker.sh && ./install_docker.sh
+    wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/install_docker.sh && chmod a+x ./install_docker.sh && ./install_docker.sh
 }
 
 install_nginx(){
-    wget --no-check-certificate https://raw.githubusercontent.com/george012/gt_script/master/install_nginx.sh && chmod a+x ./install_nginx.sh && ./install_nginx.sh
+    wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/install_nginx.sh && chmod a+x ./install_nginx.sh && ./install_nginx.sh
 }
 
 echo "============================ ${PROJECT_NAME} ============================"

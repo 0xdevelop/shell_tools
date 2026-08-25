@@ -12,7 +12,7 @@ dislble_ufw(){
 }
 
 optimize_network(){
-    wget --no-check-certificate https://raw.githubusercontent.com/george012/gt_script/master/optimize_network.sh && chmod a+x ./optimize_network.sh && ./optimize_network.sh
+    wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/optimize_network.sh && chmod a+x ./optimize_network.sh && ./optimize_network.sh
 }
 
 NEW_SSH_PORT=22
