@@ -7,6 +7,7 @@
   - [1.3. create\_restricted\_user.sh —— 添加受限用户](#13-create_restricted_usersh--添加受限用户)
   - [1.4. optimize\_network.sh —— 系统网络调优（51200 并发）](#14-optimize_networksh--系统网络调优51200-并发)
   - [1.5. ubuntu\_cn\_dir\_to\_en\_dir.sh —— 中文用户目录改英文](#15-ubuntu_cn_dir_to_en_dirsh--中文用户目录改英文)
+  - [1.6. ubuntu20+\_disable\_ubuntu\_pro.sh —— 关闭 Ubuntu Pro / ESM](#16-ubuntu20_disable_ubuntu_prosh--关闭-ubuntu-pro--esm)
 - [2. 软件安装](#2-软件安装)
   - [2.1. install\_softs.sh —— 常用软件一键聚合安装](#21-install_softssh--常用软件一键聚合安装)
   - [2.2. install\_docker.sh](#22-install_dockersh)
@@ -94,6 +95,23 @@ wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_to
 - 默认交互确认后才动目录；无人值守加 `-y`。
 - 同名文件以中文目录一侧为准合并进英文目录；原件始终完整留在备份目录。
 - 执行完注销重登（或 reboot）生效；确认英文目录内容无缺后可自行删除备份目录。
+
+## 1.6. ubuntu20+_disable_ubuntu_pro.sh —— 关闭 Ubuntu Pro / ESM
+
+用于 Ubuntu 20+：解绑 Ubuntu Pro 订阅，关闭相关后台检查、APT News 和 ESM 提示，
+停用 ESM 软件源及相关 APT 配置。脚本不禁用普通 Ubuntu 的 `apt-daily.timer` /
+`apt-daily-upgrade.timer`，也不主动关闭普通 Ubuntu 软件源。
+
+```bash
+wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/ubuntu20+_disable_ubuntu_pro.sh
+sudo bash ./ubuntu20+_disable_ubuntu_pro.sh
+```
+
+- 需要 root、APT/dpkg 和 systemd 环境；没有参数或交互确认，执行即修改系统。
+- 仓库文件是执行入口，会覆盖生成 `/root/disable-ubuntu-pro.sh` 并立即运行；请用上面的 `sudo bash` 方式调用。
+- 尝试解绑订阅、关闭 APT News，停止并屏蔽 Pro 相关 systemd 单元；禁用 ESM APT hook、源和优先级配置，隐藏 ESM MOTD 并清理相关消息缓存。
+- **会停止获取 ESM 扩展安全更新**；普通源能提供哪些更新取决于当前 Ubuntu 版本及其支持状态。此脚本适用于明确不再使用 Pro / ESM 的机器。
+- 脚本没有自动回滚入口。执行末尾输出单元、APT hook、源和普通 APT 定时器的检查结果；多处命令失败会继续执行，最终完成提示不代表每项修改均成功，需核对这些输出。
 
 # 2. 软件安装
 
