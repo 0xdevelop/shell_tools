@@ -15,6 +15,7 @@
   - [2.4. install\_nginx.sh](#24-install_nginxsh)
   - [2.5. install\_nacos.sh](#25-install_nacossh)
   - [2.6. ftp\_manager.sh —— VSFTPD 安装与 FTP 用户管理](#26-ftp_managersh--vsftpd-安装与-ftp-用户管理)
+  - [2.7. install\_mysql.sh —— MySQL 官方 APT 源安装](#27-install_mysqlsh--mysql-官方-apt-源安装)
 - [3. Redis 生产配置](#3-redis-生产配置)
   - [3.1. redis\_persistence\_setup.sh —— 持久化与认证配置器](#31-redis_persistence_setupsh--持久化与认证配置器)
 - [4. Nginx 调优](#4-nginx-调优)
@@ -168,6 +169,27 @@ sudo ./ftp_manager.sh
 - 初始化会备份配置、重启 VSFTPD；UFW 启用时放行端口 `21`、`30000:30100`。
 - 云服务器还需放行安全组；NAT 环境可能需要设置 `pasv_address`。
 - 默认普通 FTP，不加密；公网使用需配置 FTPS 或 VPN。
+
+## 2.7. install_mysql.sh —— MySQL 官方 APT 源安装
+
+Ubuntu / Debian 新装 MySQL Community Server，使用 `repo.mysql.com` 官方 APT 源。
+交互选择 **8.0 或 LTS 长期支持系列**，安装所选系列的最新补丁包；不提供 Innovation、测试版或 NDB Cluster。
+菜单从当前系统代号和 CPU 架构对应的官方包索引生成，仅显示实际有服务端包的系列，不跨发行版借用源。
+
+```bash
+wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/install_mysql.sh
+sudo bash ./install_mysql.sh
+```
+
+- 需要 root、交互终端和运行中的 systemd。先安装下载与签名校验工具，再显示版本菜单；输入 `0` 退出，选择后再次确认安装。
+- 通过 HTTPS 获取官方公钥并核对指纹，验证仓库签名与包索引 SHA-256；APT 继续校验实际安装包。
+- 检测到已有 MySQL / MariaDB / Percona 服务端、非空 `/var/lib/mysql` 或已有 MySQL 官方源时停止，不自动升级、降级或覆盖现有配置。
+- 安装时按官方软件包提示配置 root 认证。安装后启用并启动 `mysql.service`，连接本地 socket 执行 `SELECT VERSION()`；需要密码时交互输入，不将密码写入脚本或命令参数。
+- 写入 `/etc/apt/sources.list.d/mysql-community.list`、`/etc/apt/preferences.d/mysql-community` 和 `/usr/share/keyrings/mysql-community.gpg`，后续 APT 更新沿用选定系列。
+- 下载和校验中间文件位于脚本目录的 `tmp/`，退出时清理本次临时目录。安装失败不自动卸载软件或回滚 APT 配置，需按错误信息检查。
+
+官方说明：[MySQL APT 安装指南](https://dev.mysql.com/doc/mysql-apt-repo-quick-guide/en/) /
+[当前仓库版本列表](https://dev.mysql.com/downloads/repo/apt/)。仓库提供安装包不等同于该系列仍处于支持期。
 
 # 3. Redis 生产配置
 
