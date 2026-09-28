@@ -59,7 +59,10 @@ if [ -e "$ESM_HOOK" ] && [ ! -L "$ESM_HOOK" ]; then
             --rename \
             --add \
             --divert "$ESM_HOOK_DIVERT" \
-            "$ESM_HOOK"
+            "$ESM_HOOK" || {
+                echo "[ERROR] ESM APT hook 备份失败，停止执行。" >&2
+                exit 1
+            }
     fi
 fi
 
@@ -83,18 +86,16 @@ do
 
     echo "[DISABLE SOURCE] $f"
 
-    case "$f" in
-        *.list)
-            sed -Ei \
-                's|^[[:space:]]*deb([[:space:]])|# DISABLED-UBUNTU-PRO deb\1|' \
-                "$f" || true
-            ;;
-        *.sources)
-            if ! grep -q '^Enabled:[[:space:]]*no' "$f"; then
-                printf '\nEnabled: no\n' >> "$f"
-            fi
-            ;;
-    esac
+    # APT 只加载 .list / .sources；整体改名可覆盖全部配置段及 deb-src。
+    backup="${f}.disabled-by-admin"
+    if [ -e "$backup" ] || [ -L "$backup" ]; then
+        echo "[ERROR] 备份已存在，不覆盖：$backup" >&2
+        exit 1
+    fi
+    mv -- "$f" "$backup" || {
+        echo "[ERROR] 无法停用 ESM 软件源：$f" >&2
+        exit 1
+    }
 done
 
 

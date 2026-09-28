@@ -111,6 +111,7 @@ sudo bash ./ubuntu20+_disable_ubuntu_pro.sh
 - 需要 root、APT/dpkg 和 systemd 环境；没有参数或交互确认，执行即修改系统。
 - 仓库文件是执行入口，会覆盖生成 `/root/disable-ubuntu-pro.sh` 并立即运行；请用上面的 `sudo bash` 方式调用。
 - 尝试解绑订阅、关闭 APT News，停止并屏蔽 Pro 相关 systemd 单元；禁用 ESM APT hook、源和优先级配置，隐藏 ESM MOTD 并清理相关消息缓存。
+- ESM 的 `.list` / `.sources` 文件整体改名为 `原文件名.disabled-by-admin`，保留原内容并停用其中全部配置段；已有同名备份时停止，不覆盖备份。
 - **会停止获取 ESM 扩展安全更新**；普通源能提供哪些更新取决于当前 Ubuntu 版本及其支持状态。此脚本适用于明确不再使用 Pro / ESM 的机器。
 - 脚本没有自动回滚入口。执行末尾输出单元、APT hook、源和普通 APT 定时器的检查结果；多处命令失败会继续执行，最终完成提示不代表每项修改均成功，需核对这些输出。
 
