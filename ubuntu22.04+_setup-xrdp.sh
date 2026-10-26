@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 # Ubuntu 22.04+：停掉 GNOME 自带远程桌面，安装 xrdp + XFCE，放行 3389/tcp。
-# 以要登录的普通用户执行。只给该用户写 ~/.xsession。
+# 以要登录的普通用户执行。只给该用户写 ~/.xsession。成功后删除脚本自身。
 set -euo pipefail
+
+SCRIPT_NAME=$(basename "$0")
 
 XSESSION_TMP=
 
@@ -227,4 +229,4 @@ main() {
     [[ "${listen_ok}" -eq 1 ]]
 }
 
-main "$@"
+main "$@" && rm -rf -- "$SCRIPT_NAME"

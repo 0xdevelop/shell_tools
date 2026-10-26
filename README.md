@@ -121,10 +121,8 @@ sudo bash ./ubuntu20+_disable_ubuntu_pro.sh
 Ubuntu 22.04 及以上：停掉 GNOME 自带远程桌面，安装 xrdp、xorgxrdp 和 XFCE，
 给当前用户写 `~/.xsession`，启用并重启 xrdp，再按本机已启用的防火墙放行 `3389/tcp`。
 
-```bash
-wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/ubuntu22.04+_setup-xrdp.sh
-chmod +x ./ubuntu22.04+_setup-xrdp.sh
-./ubuntu22.04+_setup-xrdp.sh
+```
+wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/ubuntu22.04+_setup-xrdp.sh && chmod a+x ./ubuntu22.04+_setup-xrdp.sh && ./ubuntu22.04+_setup-xrdp.sh
 ```
 
 - 以要登录远程桌面的普通用户执行，不要 root，也不要用 `sudo` 包住整个脚本；提权只发生在脚本内部。
@@ -137,6 +135,7 @@ chmod +x ./ubuntu22.04+_setup-xrdp.sh
 - 云服务器安全组需要另行放行 `3389/tcp`。xrdp 默认监听所有接口。
 - 用 Windows App 连接 `局域网IP:3389`，Session 选 Xorg，用户名是执行脚本的用户，密码是该用户的系统登录密码。`/etc/xrdp/xrdp.ini` 没有 `[Xorg]` 时脚本会警告。
 - 可以重复执行。3389 未监听时以非零状态退出。
+- 执行成功后删除当前目录下的脚本自身；中途失败或 3389 未监听则保留。
 
 # 2. 软件安装
 
