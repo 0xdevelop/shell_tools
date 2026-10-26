@@ -8,6 +8,7 @@
   - [1.4. optimize\_network.sh —— 系统网络调优（51200 并发）](#14-optimize_networksh--系统网络调优51200-并发)
   - [1.5. ubuntu\_cn\_dir\_to\_en\_dir.sh —— 中文用户目录改英文](#15-ubuntu_cn_dir_to_en_dirsh--中文用户目录改英文)
   - [1.6. ubuntu20+\_disable\_ubuntu\_pro.sh —— 关闭 Ubuntu Pro / ESM](#16-ubuntu20_disable_ubuntu_prosh--关闭-ubuntu-pro--esm)
+  - [1.7. ubuntu22.04+_setup-xrdp.sh —— 安装 xrdp 与 XFCE](#17-ubuntu2204_setup-xrdpsh--安装-xrdp-与-xfce)
 - [2. 软件安装](#2-软件安装)
   - [2.1. install\_softs.sh —— 常用软件一键聚合安装](#21-install_softssh--常用软件一键聚合安装)
   - [2.2. install\_docker.sh](#22-install_dockersh)
@@ -37,7 +38,7 @@
 
 # shell_tools
 
-Linux 服务器初始化 / 软件安装 / 生产配置 / 证书 / 仓库版本 / 网络诊断 / 文件传输 的 shell 工具集。
+Linux 服务器初始化 / 软件安装 / 生产配置 / 证书 / 仓库版本 / 网络诊断 / 文件传输 / 远程桌面 的 shell 工具集。
 所有脚本一键调用形态统一（**分支段是 `main`**，本仓默认分支）：
 
 ```
@@ -114,6 +115,28 @@ sudo bash ./ubuntu20+_disable_ubuntu_pro.sh
 - ESM 的 `.list` / `.sources` 文件整体改名为 `原文件名.disabled-by-admin`，保留原内容并停用其中全部配置段；已有同名备份时停止，不覆盖备份。
 - **会停止获取 ESM 扩展安全更新**；普通源能提供哪些更新取决于当前 Ubuntu 版本及其支持状态。此脚本适用于明确不再使用 Pro / ESM 的机器。
 - 脚本没有自动回滚入口。执行末尾输出单元、APT hook、源和普通 APT 定时器的检查结果；多处命令失败会继续执行，最终完成提示不代表每项修改均成功，需核对这些输出。
+
+## 1.7. ubuntu22.04+_setup-xrdp.sh —— 安装 xrdp 与 XFCE
+
+Ubuntu 22.04 及以上：停掉 GNOME 自带远程桌面，安装 xrdp、xorgxrdp 和 XFCE，
+给当前用户写 `~/.xsession`，启用并重启 xrdp，再按本机已启用的防火墙放行 `3389/tcp`。
+
+```bash
+wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/ubuntu22.04+_setup-xrdp.sh
+chmod +x ./ubuntu22.04+_setup-xrdp.sh
+./ubuntu22.04+_setup-xrdp.sh
+```
+
+- 以要登录远程桌面的普通用户执行，不要 root，也不要用 `sudo` 包住整个脚本；提权只发生在脚本内部。
+- 仅支持 Ubuntu 22.04+、sudo 和正在运行的 systemd。没有参数。
+- 会停止并禁用已安装的 `gnome-remote-desktop`（系统级和当前用户级）。正在使用的 GNOME 远程桌面会断开。
+- 安装 `xrdp`、`xorgxrdp`、`xfce4`、`xfce4-goodies`，不覆盖已有软件包配置。`xfce4-goodies` 会带上一整套 XFCE 组件。
+- 只给当前用户写 `~/.xsession`（执行 `/usr/bin/startxfce4`）。内容不同时先备份为 `~/.xsession.bak-<时间戳>`。
+- 把 `xrdp` 用户加入 `ssl-cert` 后重启 xrdp，使证书私钥的组权限生效。已有 xrdp 会话会断开。
+- 防火墙只处理已经启用的规则：ufw 已启用则放行；否则 firewalld 在运行则永久放行并重载；否则 iptables INPUT 存在 DROP 或 REJECT 时插入 IPv4 放行。这条 iptables 规则重启后不保留。没有活跃防火墙则不改规则，也不主动打开防火墙。
+- 云服务器安全组需要另行放行 `3389/tcp`。xrdp 默认监听所有接口。
+- 用 Windows App 连接 `局域网IP:3389`，Session 选 Xorg，用户名是执行脚本的用户，密码是该用户的系统登录密码。`/etc/xrdp/xrdp.ini` 没有 `[Xorg]` 时脚本会警告。
+- 可以重复执行。3389 未监听时以非零状态退出。
 
 # 2. 软件安装
 
