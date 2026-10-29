@@ -1,4 +1,11 @@
 #!/bin/bash
+# 契约
+# 做：创建可登录用户，写入 SSH 公钥，并给 NOPASSWD sudo
+# 系统：Ubuntu（写 /etc/sudoers.d，依赖已有 90-cloud-init-users 作模板）
+# 权限：root
+# 参数：$1 用户名 $2 SSH 公钥
+# 改：useradd、sudo/admin/adm 组、sudoers.d/<用户>、~/.ssh/authorized_keys
+# 完：成功后删除脚本自身
 set -e
 
 # 检查是否提供了必要的参数

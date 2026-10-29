@@ -1,5 +1,19 @@
 #!/bin/bash
+# 契约
+# 做：打印证书 notBefore / notAfter 与剩余天数
+# 系统：有 openssl 与 GNU date 的 Linux
+# 权限：能读证书文件
+# 参数：$1 证书路径；缺则交互询问；-h/--help 查看用法
+# 改：无
+# 完：检查完成后删除脚本自身；失败或输入中断则保留
 set -e
+
+SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+if [[ "$#" -eq 1 && ( "$1" == -h || "$1" == --help ) ]]; then
+    echo "用法：$0 [证书路径]"
+    exit 0
+fi
 
 # 检查命令行参数
 if [ "$#" -eq 1 ]; then
@@ -29,9 +43,9 @@ CURRENT_TIMESTAMP=$(date +%s)
 
 # 将日期转换为Unix时间戳，并格式化为UTC和北京时间
 format_date() {
-    local input_date="$1"
-    local utc_date=$(date -u -d "$input_date" +"%Y-%m-%d %H:%M:%S UTC")
-    local beijing_date=$(TZ="Asia/Shanghai" date -d "$input_date" +"%Y-%m-%d %H:%M:%S Beijing")
+    local input_date="$1" utc_date beijing_date
+    utc_date=$(date -u -d "$input_date" +"%Y-%m-%d %H:%M:%S UTC") || return
+    beijing_date=$(TZ="Asia/Shanghai" date -d "$input_date" +"%Y-%m-%d %H:%M:%S Beijing") || return
     echo "$utc_date / $beijing_date"
 }
 
@@ -54,3 +68,5 @@ if [ ${CURRENT_TIMESTAMP} -gt ${END_TIMESTAMP} ]; then
 else
     echo "证书在有效期内。"
 fi
+
+rm -rf -- "$SCRIPT_DIR/$SCRIPT_NAME"

@@ -39,11 +39,17 @@
 # shell_tools
 
 Linux 服务器初始化 / 软件安装 / 生产配置 / 证书 / 仓库版本 / 网络诊断 / 文件传输 / 远程桌面 的 shell 工具集。
-所有脚本一键调用形态统一（**分支段是 `main`**，本仓默认分支）：
+本仓独立维护；xjb_coding 等调用方使用时拉当次 `main`，不把脚本抄走、不把清单冻进插件发版。
+
+人工直接下载时，一键调用形态统一（**分支段是 `main`**）：
 
 ```
 wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/<脚本名> && chmod a+x ./<脚本名> && ./<脚本名> [参数]
 ```
+
+已经拿到本仓副本的 agent：读当次目录里的文件，不要再 `wget`，也不要 `--no-check-certificate`。每个 `.sh` 开头的「契约」是可直接读的边界（做什么、系统、权限、参数、会改什么、成功后是否自删）；细节以该文件和下面章节为准。不另维护 JSON / SKILL.md。新增脚本带同一套契约即可被发现。
+
+一次性安装、配置和转换入口在所选步骤成功完成后自删；失败、帮助、取消或提前退出时保留。版本工具、FTP 管理菜单、持续监控及含用户上传配置的脚本保留，供重复调用。Ubuntu Pro 入口多处容忍命令失败，尚不能以末尾提示判断全部成功，因此保留供核对；不把退出码当作完整业务验收。
 
 同族脚本的分工：**安装（第 2 节）管「装上」，配置 / 调优（第 3、4 节）管「配好」**——
 如 `install_redis.sh` 负责从官方源装 Redis，`redis_persistence_setup.sh` 负责把装好的实例
@@ -56,7 +62,7 @@ wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_to
 装基础工具链（unzip / wget / logrotate / 证书链等）并串起网络调优，新机开荒第一步。
 
 ```
-wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/setup_ubuntu20.sh && chmod a+x ./setup_ubuntu20.sh && ./setup_ubuntu20.sh
+wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/setup_ubuntu20.sh && chmod a+x ./setup_ubuntu20.sh && sudo ./setup_ubuntu20.sh
 ```
 
 ## 1.2. ubuntu20+adduser_to_login.sh —— 添加可登录用户
@@ -69,7 +75,7 @@ wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_to
 
 ## 1.3. create_restricted_user.sh —— 添加受限用户
 
-创建权限受限的用户（与 1.2 的区别：受限 shell / 最小权限形态）。
+创建家目录在 `/usr/local/<用户>` 的 Bash 账号并写入 SSH 公钥，不授予 sudo 权限，也不提供目录隔离。
 
 ```
 wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/create_restricted_user.sh && chmod a+x ./create_restricted_user.sh && ./create_restricted_user.sh <username> "<ssh_public_key>"
@@ -105,12 +111,11 @@ wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_to
 `apt-daily-upgrade.timer`，也不主动关闭普通 Ubuntu 软件源。
 
 ```bash
-wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/ubuntu20+_disable_ubuntu_pro.sh
-sudo bash ./ubuntu20+_disable_ubuntu_pro.sh
+wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/ubuntu20+_disable_ubuntu_pro.sh && chmod a+x ./ubuntu20+_disable_ubuntu_pro.sh && sudo ./ubuntu20+_disable_ubuntu_pro.sh
 ```
 
 - 需要 root、APT/dpkg 和 systemd 环境；没有参数或交互确认，执行即修改系统。
-- 仓库文件是执行入口，会覆盖生成 `/root/disable-ubuntu-pro.sh` 并立即运行；请用上面的 `sudo bash` 方式调用。
+- 仓库文件是执行入口，会覆盖生成 `/root/disable-ubuntu-pro.sh` 并立即运行；请用上面的 `sudo` 方式调用。
 - 尝试解绑订阅、关闭 APT News，停止并屏蔽 Pro 相关 systemd 单元；禁用 ESM APT hook、源和优先级配置，隐藏 ESM MOTD 并清理相关消息缓存。
 - ESM 的 `.list` / `.sources` 文件整体改名为 `原文件名.disabled-by-admin`，保留原内容并停用其中全部配置段；已有同名备份时停止，不覆盖备份。
 - **会停止获取 ESM 扩展安全更新**；普通源能提供哪些更新取决于当前 Ubuntu 版本及其支持状态。此脚本适用于明确不再使用 Pro / ESM 的机器。
@@ -141,8 +146,8 @@ wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_to
 
 ## 2.1. install_softs.sh —— 常用软件一键聚合安装
 
-聚合入口：内部依次拉起本仓的 `install_redis.sh` / `install_docker.sh` /
-`install_nginx.sh` / `optimize_network.sh`。只想装单件用 2.2-2.5。
+菜单入口：按选择运行本仓的 `install_docker.sh`、`install_redis.sh` 或
+`install_nginx.sh`，每次只选一项。直接安装对应软件也可用 2.2-2.5。
 
 ```
 wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/install_softs.sh && chmod a+x ./install_softs.sh && ./install_softs.sh
@@ -175,7 +180,7 @@ wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_to
 安装 Nacos（固定配置写死在脚本内，不提供环境变量覆盖——改配置直接改脚本头部常量段）。
 
 ```
-wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/install_nacos.sh && chmod a+x ./install_nacos.sh && ./install_nacos.sh
+wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/install_nacos.sh && chmod a+x ./install_nacos.sh && sudo ./install_nacos.sh
 ```
 
 ## 2.6. ftp_manager.sh —— VSFTPD 安装与 FTP 用户管理
@@ -184,9 +189,7 @@ Ubuntu / Debian 交互式 FTP 管理：菜单 1 安装初始化，菜单 2 创�
 使用 chroot 限定访问目录，ACL 授予读写权限，保留目录 owner/group。
 
 ```bash
-wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/ftp_manager.sh
-chmod +x ftp_manager.sh
-sudo ./ftp_manager.sh
+wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/ftp_manager.sh && chmod a+x ./ftp_manager.sh && sudo ./ftp_manager.sh
 ```
 
 - 初始化会备份配置、重启 VSFTPD；UFW 启用时放行端口 `21`、`30000:30100`。
@@ -200,8 +203,7 @@ Ubuntu / Debian 新装 MySQL Community Server，使用 `repo.mysql.com` 官方 A
 菜单从当前系统代号和 CPU 架构对应的官方包索引生成，仅显示实际有服务端包的系列，不跨发行版借用源。
 
 ```bash
-wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/install_mysql.sh
-sudo bash ./install_mysql.sh
+wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/install_mysql.sh && chmod a+x ./install_mysql.sh && sudo ./install_mysql.sh
 ```
 
 - 需要 root、交互终端和运行中的 systemd。先安装下载与签名校验工具，再显示版本菜单；输入 `0` 退出，选择后再次确认安装。
@@ -267,7 +269,7 @@ sudo ./redis_persistence_setup.sh /path/to/redis.conf
 改写 `nginx.conf` 的并发相关参数（worker 连接数等）。
 
 ```
-wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/nginx_optimize.sh && chmod a+x ./nginx_optimize.sh && ./nginx_optimize.sh
+wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/nginx_optimize.sh && chmod a+x ./nginx_optimize.sh && sudo ./nginx_optimize.sh
 ```
 
 # 5. SSL/TLS 证书
@@ -278,10 +280,10 @@ wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_to
 
 ```
 # 交互式一键
-wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/auto_ssl.sh && chmod a+x ./auto_ssl.sh && ./auto_ssl.sh
+wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/auto_ssl.sh && chmod a+x ./auto_ssl.sh && sudo ./auto_ssl.sh
 
 # 显式传参
-wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/auto_ssl.sh && chmod a+x ./auto_ssl.sh && ./auto_ssl.sh -nginx_web_root /testberoot -domain www.test.com -email testtest@gmail.com
+wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/auto_ssl.sh && chmod a+x ./auto_ssl.sh && sudo ./auto_ssl.sh -nginx_web_root /testberoot -domain www.test.com -email testtest@gmail.com
 ```
 
 ## 5.2. check_cert.sh —— 证书到期检查
@@ -289,7 +291,7 @@ wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_to
 检查指定证书文件的到期时间（与 5.1 分工：签发续期归 auto_ssl，巡检归本脚本）。
 
 ```
-wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/check_cert.sh && chmod a+x ./check_cert.sh && ./check_cert.sh /path/to/your/certificate.crt && rm -rf ./check_cert.sh
+wget --no-check-certificate https://raw.githubusercontent.com/0xdevelop/shell_tools/main/check_cert.sh && chmod a+x ./check_cert.sh && ./check_cert.sh /path/to/your/certificate.crt
 ```
 
 # 6. GitHub 仓库版本工具
@@ -329,6 +331,7 @@ Windows（PowerShell，常用于 GitHub Actions）：
 ```
 Invoke-WebRequest -Uri https://raw.githubusercontent.com/0xdevelop/shell_tools/main/github_repo_version_scan.ps1 -OutFile github_repo_version_scan.ps1
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+. ./github_repo_version_scan.ps1
 $file_exist = Check-FileExistFromRepoLatest -Repo "github.com/$env:GITHUB_REPOSITORY" -FileName "$env:over_file_name"
 echo "file_exist=$file_exist" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 ```
@@ -380,9 +383,7 @@ Linux 实时抓包，显示接口、方向、地址、协议和长度。需要 t
 
 ```bash
 sudo apt-get update && sudo apt-get install -y tcpdump
-wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/network_flow_watch.sh
-chmod +x network_flow_watch.sh
-./network_flow_watch.sh
+wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/network_flow_watch.sh && chmod a+x ./network_flow_watch.sh && ./network_flow_watch.sh
 ./network_flow_watch.sh -i wg0
 ./network_flow_watch.sh -- 'host 10.0.0.8 and port 443'
 ```
@@ -397,8 +398,7 @@ chmod +x network_flow_watch.sh
 通过私钥和指定端口，将本地文件上传到多台服务器，自动创建远端目录并覆盖同名文件。
 
 ```bash
-wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/ssh_upload.sh
-chmod +x ssh_upload.sh
+wget https://raw.githubusercontent.com/0xdevelop/shell_tools/main/ssh_upload.sh && chmod a+x ./ssh_upload.sh
 ```
 
 先修改脚本开头的配置，再运行 `./ssh_upload.sh`：

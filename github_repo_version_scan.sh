@@ -1,4 +1,11 @@
 #!/bin/bash
+# 契约
+# 做：查公开 GitHub 仓 latest 版本、upload_url，或比两个仓是否要更新
+# 系统：Linux，需要 curl、GNU grep（-P）与 sort（-V）
+# 权限：读 GitHub API
+# 参数：--check_need_update|--get_latest_version|--get_latest_upload_url|--check_file_exist_from_repo_latest
+# 改：无；URI 形如 github.com/owner/repo
+# 完：保留脚本，供重复调用不同子命令
 set -e
 SCRIPT_NAME=$(basename $0)
 

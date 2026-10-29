@@ -1,3 +1,11 @@
+#!/usr/bin/env bash
+# 契约
+# 做：解绑 Ubuntu Pro，关掉 ESM/APT News 相关单元与源，不动普通 apt-daily
+# 系统：Ubuntu 20+，需要 APT 与 systemd
+# 权限：root（sudo bash）
+# 参数：无，无确认，执行即改系统
+# 改：生成并运行 /root/disable-ubuntu-pro.sh；解绑订阅、禁用 Pro 单元/APT hook/ESM 源与偏好、隐藏 MOTD、清消息缓存
+# 完：保留入口及生成脚本；多处失败会继续，末尾提示不代表每项成功；无自动回滚
 cat >/root/disable-ubuntu-pro.sh <<'EOF'
 #!/usr/bin/env bash
 set -u

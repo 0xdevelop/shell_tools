@@ -1,6 +1,20 @@
 #!/usr/bin/env bash
+# 契约
+# 做：给已安装的 Redis 配 RDB+AOF、noeviction，可选 ACL；不安装 Redis
+# 系统：Linux，Redis 7/8
+# 权限：root；确认前会备份及建临时文件，确认后才写目标配置
+# 参数：可选 redis.conf 路径，默认常见路径；-h/--help 查看用法
+# 改：redis.conf 与所选外部 ACL 文件（先备份）；可交互切换运行中 Redis 的 AOF；不自动重启，明文密码不落盘
+# 完：完成所选配置步骤后自删；取消/失败保留
 set -Eeuo pipefail
 IFS=$'\n\t'
+
+SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+if [[ "$#" -eq 1 && ( "$1" == -h || "$1" == --help ) ]]; then
+  echo "用法：sudo $0 [redis.conf路径]"
+  exit 0
+fi
 
 # ============================================================================
 # 配置区 —— 要改的参数都在这一段，往下的执行逻辑不需要读。
@@ -133,6 +147,7 @@ ACL_CREATED_NEW=0
 cleanup() {
   [[ -n "${WORK:-}" && -e "${WORK:-}" ]] && rm -f -- "$WORK"
   [[ -n "${ACL_WORK:-}" && -e "${ACL_WORK:-}" && "${ACL_WORK:-}" != "${WORK:-}" ]] && rm -f -- "$ACL_WORK"
+  return 0
 }
 trap cleanup EXIT
 cp -a -- "$CONF" "$WORK" || die "创建工作副本失败。"
@@ -593,3 +608,5 @@ info "脚本不会自动 restart Redis。确认运行时 AOF 状态正常后，�
 if [[ "$ACL_ENABLED" -eq 1 ]]; then
   info "重启/加载新 ACL 后，连接必须使用用户名 ${ACL_USERNAME} + 你刚才输入的密码。"
 fi
+
+rm -rf -- "$SCRIPT_DIR/$SCRIPT_NAME"

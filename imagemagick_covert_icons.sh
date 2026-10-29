@@ -1,10 +1,22 @@
 #!/bin/bash
+# 契约
+# 做：用 ImageMagick 把一张 Logo 转出多尺寸图标到 ./icons
+# 系统：有 magick，或允许脚本询问后安装 ImageMagick
+# 权限：写当前目录；装包则需要相应权限
+# 参数：$1 Logo 路径，默认 Logo.png；-h/--help 查看用法
+# 改：./icons/；存在 BRIDGE.md 时覆盖其内容；可能安装 ImageMagick
+# 完：成功后删除脚本自身
 set -eo pipefail
 
 # =========================
 # 基础配置
 # =========================
 SCRIPT_NAME=$(basename "$0")
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+if [[ "$#" -eq 1 && ( "$1" == -h || "$1" == --help ) ]]; then
+    echo "用法：$0 [Logo路径]"
+    exit 0
+fi
 INPUT=${1:-"Logo.png"}
 OUT="icons"
 
@@ -231,4 +243,6 @@ main() {
 }
 
 # 运行
-main && wait && rm -rf $SCRIPT_NAME && exit 0
+main
+wait
+rm -rf -- "$SCRIPT_DIR/$SCRIPT_NAME"

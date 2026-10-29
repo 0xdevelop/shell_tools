@@ -1,7 +1,20 @@
 #!/bin/bash
+# 契约
+# 做：把 /etc/nginx/nginx.conf 的 worker 连接等调到 51200 量级
+# 系统：已安装 Nginx 的 Linux
+# 权限：root，需要写 Nginx/systemd 配置并重启服务
+# 参数：无；-h/--help 查看用法
+# 改：nginx.conf（先覆盖备份为 nginx.conf.bak）、systemd nginx.service.d/override.conf；daemon-reload 并重启 Nginx
+# 完：成功后删除脚本自身
 set -e
 
 CUSTOM_FILNAME=$(basename "$0")
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+if [[ "$#" -gt 0 ]]; then
+    echo "用法：$0（无参数）" >&2
+    [[ "$#" -eq 1 && ( "$1" == -h || "$1" == --help ) ]] && exit 0
+    exit 2
+fi
 echo "file name with "$CUSTOM_FILNAME
 
 # 定义 nginx.conf 的路径
@@ -59,4 +72,7 @@ function update_nginx_override_conf() {
 }
 
 
-update_nginx_conf && update_nginx_override_conf && wait && rm -rf $CUSTOM_FILNAME
+update_nginx_conf
+update_nginx_override_conf
+wait
+rm -rf -- "$SCRIPT_DIR/$CUSTOM_FILNAME"

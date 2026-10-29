@@ -1,5 +1,11 @@
 #!/bin/bash
-
+# 契约
+# 做：用 GitHub PAT 查私有仓 release 名、upload_url、是否需更新、下 assets
+# 系统：有 curl 与 jq
+# 权限：PAT 对目标仓可读
+# 参数：$1 子命令 $2 PAT $3 owner/repo …（见 README 6.2）
+# 改：下载子命令先写当前目录，再移动到 $SAVE_DIR；可能覆盖同名文件
+# 完：保留脚本，供重复调用不同子命令
 set -e
 
 REPO_USER=ACTION_BOT

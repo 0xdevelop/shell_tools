@@ -1,3 +1,10 @@
+# 契约
+# 做：公开 GitHub 仓 latest 检查（GitHub Actions / Windows）
+# 系统：PowerShell
+# 权限：读 GitHub API
+# 参数：点载入后调用 Check-FileExistFromRepoLatest 等函数，见 README 6.1
+# 改：无
+# 完：保留函数库文件
 function Parse-Json {
     param (
         [string]$Json,

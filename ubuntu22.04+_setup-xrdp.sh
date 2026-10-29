@@ -1,9 +1,15 @@
 #!/usr/bin/env bash
-# Ubuntu 22.04+：停掉 GNOME 自带远程桌面，安装 xrdp + XFCE，放行 3389/tcp。
-# 以要登录的普通用户执行。只给该用户写 ~/.xsession。成功后删除脚本自身。
+# 契约
+# 做：停 GNOME 远程桌面，安装 xrdp + XFCE，放行 3389/tcp
+# 系统：Ubuntu 22.04+，需要 sudo 与运行中的 systemd
+# 权限：普通用户执行（不要包 sudo）；提权只在脚本内
+# 参数：无
+# 改：停 gnome-remote-desktop、装 xrdp/xfce、写当前用户 ~/.xsession、xrdp 加 ssl-cert 组并重启、防火墙 3389
+# 完：成功后删除脚本自身；3389 未监听则保留并非零退出
 set -euo pipefail
 
 SCRIPT_NAME=$(basename "$0")
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
 XSESSION_TMP=
 
@@ -229,4 +235,5 @@ main() {
     [[ "${listen_ok}" -eq 1 ]]
 }
 
-main "$@" && rm -rf -- "$SCRIPT_NAME"
+main "$@"
+rm -rf -- "$SCRIPT_DIR/$SCRIPT_NAME"

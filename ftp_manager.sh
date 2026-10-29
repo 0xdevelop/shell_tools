@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-
+# 契约
+# 做：交互安装 vsftpd，或创建 chroot FTP 用户并绑目录
+# 系统：Ubuntu / Debian
+# 权限：root（sudo ./ftp_manager.sh）
+# 参数：无，菜单 1 初始化 / 2 建用户
+# 改：APT 包、vsftpd 配置/允许列表、用户密码、/etc/shells、目录 ACL；重启 vsftpd；UFW 已启用则放行 21 与 30000:30100
+# 完：保留脚本，菜单可连续管理多个用户
 set -Eeuo pipefail
 
 CONF="/etc/vsftpd.conf"

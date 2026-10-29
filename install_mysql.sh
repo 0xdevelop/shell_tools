@@ -1,4 +1,11 @@
 #!/usr/bin/env bash
+# 契约
+# 做：用 MySQL 官方 APT 源新装 Community Server（交互选 8.0 或 LTS）
+# 系统：Ubuntu / Debian，需要 systemd 与交互终端
+# 权限：root（sudo bash）
+# 参数：无；-h/--help 查看用法
+# 改：菜单前安装校验工具；选择后写官方源/偏好/密钥，安装并启动 MySQL；已有服务端/数据则停止
+# 完：安装及 SQL 验证完成后自删；帮助/取消/失败保留；脚本目录 tmp/ 下本次临时文件退出时清理
 set -euo pipefail
 
 MYSQL_REPO=https://repo.mysql.com/apt
@@ -164,8 +171,9 @@ main() {
     check_environment
     apt-get -o APT::Update::Error-Mode=any update
     apt-get --no-remove install -y ca-certificates curl gnupg
-    local script_dir
+    local script_dir script_name
     script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+    script_name=$(basename -- "${BASH_SOURCE[0]}")
     mkdir -p "$script_dir/tmp"
     WORK_DIR=$(mktemp -d "$script_dir/tmp/install-mysql.XXXXXX")
     trap cleanup EXIT
@@ -175,6 +183,7 @@ main() {
     load_versions
     choose_version
     install_mysql
+    rm -rf -- "$script_dir/$script_name"
 }
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then

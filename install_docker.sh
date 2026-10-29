@@ -1,7 +1,20 @@
 #!/bin/bash
-set -e
+# 契约
+# 做：从 Docker 官方 APT 源安装 docker-ce 及 compose/buildx，enable 并启动
+# 系统：Ubuntu
+# 权限：sudo
+# 参数：无；-h/--help 查看用法
+# 改：APT 源与密钥、安装 Docker 组件、启动 docker.service
+# 完：成功后删除脚本自身
+set -eo pipefail
 
-SCRIPT_NAME=$(basename $0)
+SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+if [[ "$#" -gt 0 ]]; then
+    echo "用法：$0（无参数）" >&2
+    [[ "$#" -eq 1 && ( "$1" == -h || "$1" == --help ) ]] && exit 0
+    exit 2
+fi
 
 pre_config(){
     sudo apt update && wait && sudo apt install -y unzip zip wget logrotate apt-transport-https ca-certificates curl gnupg lsb-release
@@ -26,7 +39,17 @@ install_docker(){
 
 
 install(){
-    pre_config && wait && config_docker_install && wait && install_docker && wait && sudo systemctl enable --now docker
+    pre_config
+    wait
+    config_docker_install
+    wait
+    install_docker
+    wait
+    sudo systemctl enable --now docker
 }
 
-install && wait && echo "docker is installed" && wait && rm -rf $SCRIPT_NAME
+install
+wait
+echo "docker is installed"
+wait
+rm -rf -- "$SCRIPT_DIR/$SCRIPT_NAME"

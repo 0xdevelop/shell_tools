@@ -1,5 +1,21 @@
 #!/usr/bin/env bash
+# 契约
+# 做：安装配置区指定的 Nacos + Temurin JDK17，写 systemd 并启动
+# 系统：Linux x86_64 / aarch64，需要 systemd
+# 权限：root
+# 参数：无；-h/--help 查看用法；版本与路径见配置区，不用环境变量覆盖
+# 改：/opt/nacos（递归改属主）、nacos 用户、覆盖 nacos.service 并重启；下载文件在 /tmp；默认 nacos/nacos
+# 完：安装完成且 nacos.service active 后自删；帮助/失败保留
 set -euo pipefail
+
+case "${1:-}" in
+  -h|--help) echo "用法：sudo bash $0；安装 Nacos 与 Temurin JDK17。"; exit 0 ;;
+  "") ;;
+  *) echo "不支持参数：$1" >&2; exit 2 ;;
+esac
+[[ "$#" -eq 0 ]] || { echo "不支持多余参数" >&2; exit 2; }
+SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
 # =========================================================
 # 固定配置（最终定稿：写死，不提供环境变量覆盖）
@@ -224,6 +240,7 @@ write_systemd_unit_overwrite
 chown -R "${NACOS_USER}:${NACOS_GROUP}" "${INSTALL_DIR}"
 
 start_service
+systemctl is-active --quiet nacos || { echo "❌ nacos.service 未正常运行" >&2; exit 1; }
 
 echo "======================================"
 echo "✅ 安装完成（最终定稿 / 0 侵入）"
@@ -232,3 +249,4 @@ echo "默认账号: nacos / nacos"
 echo "文件日志: ${NACOS_DIR}/logs/ （start.out / nacos.log）"
 echo "systemd 日志: journalctl -u nacos -f"
 echo "======================================"
+rm -rf -- "$SCRIPT_DIR/$SCRIPT_NAME"

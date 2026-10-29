@@ -1,8 +1,22 @@
 #!/usr/bin/env bash
-# 把 Ubuntu 中文 XDG 用户目录（桌面/下载/…）迁移为英文（Desktop/Downloads/…）。
-# 先把内容复制进英文目录，再把中文目录整体移入带时间戳的备份目录——不删除任何数据。
-# 用法: ./ubuntu_cn_dir_to_en_dir.sh [-y]   （-y 跳过交互确认，供无人值守使用）
+# 契约
+# 做：把中文 XDG 用户目录迁成英文名，原中文目录整包备份，不删数据
+# 系统：Ubuntu 桌面
+# 权限：目标桌面用户，不要 sudo
+# 参数：[-y|--yes] 跳过确认；-h/--help 查看用法
+# 改：家目录英文目录、~/.config/user-dirs.dirs 与 user-dirs.locale；备份在 ~/.xdg-user-dirs-cn-backup-<时间戳>/
+# 完：复制与配置完成后自删；取消/复制失败/其他错误保留；需注销重登生效
 set -Eeuo pipefail
+
+case "${1:-}" in
+  -h|--help) echo "用法：$0 [-y|--yes]；迁移当前用户的中文 XDG 目录。"; exit 0 ;;
+  ""|-y|--yes) ;;
+  *) echo "不支持参数：$1" >&2; exit 2 ;;
+esac
+[[ "$#" -le 1 ]] || { echo "不支持多余参数" >&2; exit 2; }
+SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+MIGRATION_FAILED=0
 
 # sudo 提权后 HOME 指向 /root，会把目录和配置建错对象；必须以目标桌面用户身份直接执行
 if [ "$(id -u)" -eq 0 ] && [ -n "${SUDO_USER:-}" ]; then
@@ -78,6 +92,7 @@ migrate_dir() {
   # 复制失败不静默: 原件仍完整留在备份目录，但要让用户看到
   if ! cp -a "$cn_path/." "$en_path/"; then
     echo "警告: $cn_name 有内容未复制成功（原件完整保留在备份目录，可手工补齐）" >&2
+    MIGRATION_FAILED=1
   fi
   mkdir -p "$BACKUP_DIR"
   mv "$cn_path" "$BACKUP_DIR/$cn_name"
@@ -131,3 +146,8 @@ else
 fi
 echo
 echo "建议注销重新登录（或 reboot）使文件管理器与应用生效。"
+if [[ "$MIGRATION_FAILED" -ne 0 ]]; then
+  echo "部分目录复制失败，脚本保留；请从上述备份核对并补齐。" >&2
+  exit 1
+fi
+rm -rf -- "$SCRIPT_DIR/$SCRIPT_NAME"

@@ -1,7 +1,19 @@
 #!/bin/bash
-set -e
+# 契约
+# 做：用 acme.sh 签证书并配定时续期（可带 Nginx web root）
+# 系统：Ubuntu / Debian，需要 APT、运行中的 Nginx 与 systemd
+# 权限：root（部分命令另调用 sudo）
+# 参数：交互；或依次 -nginx_web_root 路径 -domain 域名 -email 邮箱；-h/--help 查看用法
+# 改：APT 包、~/.acme.sh、站点目录/证书、Nginx 域名与 default 配置、续期 service/timer；重载并重启 Nginx
+# 完：成功后删除脚本自身
+set -eo pipefail
 
-SCRIPT_NAME=$(basename $0)
+SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+if [[ "$#" -eq 1 && ( "$1" == -h || "$1" == --help ) ]]; then
+    echo "用法：$0 [-nginx_web_root 路径 -domain 域名 -email 邮箱]"
+    exit 0
+fi
 
 INPUT_DOMAIN=""
 INPUT_EMAIL=""
@@ -312,23 +324,21 @@ function enable_service(){
 
 function onkey_install(){
     if nginx_is_runing; then
-        input_domain \
-        && input_email \
-        && create_nginx_vhost \
-        && handleDefault \
-        && wait \
-        && install_acme \
-        && wait \
-        && request_cert \
-        && wait \
-        && install_cert \
-        && wait \
-        && create_acme_service \
-        && wait \
-        && create_acme_service_timer \
-        && enable_service
-
-        return 0
+        input_domain
+        input_email
+        create_nginx_vhost
+        handleDefault
+        wait
+        install_acme
+        wait
+        request_cert
+        wait
+        install_cert
+        wait
+        create_acme_service
+        wait
+        create_acme_service_timer
+        enable_service
     else
         echo "nginx not runing"
         return 1
@@ -337,21 +347,19 @@ function onkey_install(){
 
 function steps_install(){
     if nginx_is_runing; then
-        create_nginx_vhost \
-        && handleDefault \
-        && wait \
-        && install_acme \
-        && wait \
-        && request_cert \
-        && wait \
-        && install_cert \
-        && wait \
-        && create_acme_service \
-        && wait \
-        && create_acme_service_timer \
-        && enable_service
-
-        return 0
+        create_nginx_vhost
+        handleDefault
+        wait
+        install_acme
+        wait
+        request_cert
+        wait
+        install_cert
+        wait
+        create_acme_service
+        wait
+        create_acme_service_timer
+        enable_service
     else
         echo "nginx not runing"
         return 1
@@ -363,15 +371,11 @@ function handle_input(){
     inputs=$1
     pre_config
     if [[ -z "${inputs// }" ]]; then
-        if onkey_install; then
-            echo "$INPUT_DOMAIN auto ssl service installed"
-            echo "$INPUT_DOMAIN private-key at [$NGINX_WEB_ROOT/$INPUT_DOMAIN/cert/$PRIVATE_NAME]"
-            echo "$INPUT_DOMAIN fullchain-key at [$NGINX_WEB_ROOT/$INPUT_DOMAIN/cert/$FULLCHAIN_NAME]"
-            return 0
-        else
-            echo "$INPUT_DOMAIN auto ssl service installation failed"
-            return 1
-        fi
+        onkey_install
+        echo "$INPUT_DOMAIN auto ssl service installed"
+        echo "$INPUT_DOMAIN private-key at [$NGINX_WEB_ROOT/$INPUT_DOMAIN/cert/$PRIVATE_NAME]"
+        echo "$INPUT_DOMAIN fullchain-key at [$NGINX_WEB_ROOT/$INPUT_DOMAIN/cert/$FULLCHAIN_NAME]"
+        return 0
     else
         echo -----------------
         echo domain=$INPUT_DOMAIN
@@ -409,16 +413,14 @@ function handle_input(){
         fi
 
 
-        if steps_install; then
-            echo "$INPUT_DOMAIN auto ssl service installed"
-            echo "$INPUT_DOMAIN private-key at [$NGINX_WEB_ROOT/$INPUT_DOMAIN/cert/$PRIVATE_NAME]"
-            echo "$INPUT_DOMAIN fullchain-key at [$NGINX_WEB_ROOT/$INPUT_DOMAIN/cert/$FULLCHAIN_NAME]"
-            return 0
-        else
-            echo "$INPUT_DOMAIN auto ssl service installation failed"
-            return 1
-        fi
+        steps_install
+        echo "$INPUT_DOMAIN auto ssl service installed"
+        echo "$INPUT_DOMAIN private-key at [$NGINX_WEB_ROOT/$INPUT_DOMAIN/cert/$PRIVATE_NAME]"
+        echo "$INPUT_DOMAIN fullchain-key at [$NGINX_WEB_ROOT/$INPUT_DOMAIN/cert/$FULLCHAIN_NAME]"
+        return 0
     fi
 }
 
-handle_input "$@" && wait && rm -rf $SCRIPT_NAME
+handle_input "$@"
+wait
+rm -rf -- "$SCRIPT_DIR/$SCRIPT_NAME"

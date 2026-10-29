@@ -1,7 +1,15 @@
 #!/bin/bash
+# 契约
+# 做：创建家目录在 /usr/local/<用户> 的 Bash 账号并写 SSH 公钥；不提供目录隔离
+# 系统：Linux，需要 useradd
+# 权限：sudo
+# 参数：$1 用户名 $2 SSH 公钥
+# 改：用户、/usr/local/<用户>、authorized_keys；不加 sudo
+# 完：成功后删除脚本自身
 set -e
 
-SCRIPT_NAME=$(basename $0)
+SCRIPT_NAME=$(basename -- "${BASH_SOURCE[0]}")
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 
 # 检查是否传入了参数
 if [ $# -ne 2 ]; then
@@ -36,4 +44,6 @@ function create_user {
     echo "User $USERNAME created with restricted access to /usr/local/$USERNAME and SSH public key authentication."
 }
 
-create_user "$1" "$2" && wait && rm -rf $SCRIPT_NAME
+create_user "$1" "$2"
+wait
+rm -rf -- "$SCRIPT_DIR/$SCRIPT_NAME"

@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-
+# 契约
+# 做：按文件头配置，用私钥把本地文件 scp 到多台服务器
+# 系统：本地 OpenSSH 9.0+；远端开 SFTP
+# 权限：能读私钥；AUTO_ROUTE=true 时 Linux 上可能需要 root/CAP_NET_ADMIN
+# 参数：无；先改文件头再运行。-h 看 usage
+# 改：远端建目录并覆盖同名文件；首次连接写 known_hosts；AUTO_ROUTE 可能加 /32 路由。无交互
+# 完：保留含上传配置的脚本；全成功 0，有失败 1
 # 上传配置。
 LOCAL_DIR="/opt/ssl_certs/test.com"
 REMOTE_DIR="/nginx_web/ssl_certs/test.com"

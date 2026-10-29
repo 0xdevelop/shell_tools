@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
-
+# 契约
+# 做：tcpdump 实时看各网卡流向；默认排除当前 SSH 会话
+# 系统：Linux，需要 tcpdump 与抓包权限
+# 权限：通常 sudo
+# 参数：-i 网卡、--include-ssh、--list-interfaces、-- 后跟 tcpdump 过滤
+# 改：无（只读抓包）
+# 完：保留脚本；Ctrl+C 退出
 set -Eeuo pipefail
 
 INTERFACE="any"

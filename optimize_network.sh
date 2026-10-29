@@ -1,7 +1,20 @@
 #!/bin/bash
+# 契约
+# 做：把 nofile 提到 1048576，写入并发相关 sysctl（含关 ipv6、开 bbr）
+# 系统：Linux，需要 /etc/security/limits.conf 与 /etc/sysctl.conf
+# 权限：root（写系统配置并 sysctl -p）
+# 参数：无；-h/--help 查看用法
+# 改：上述两文件（无 bak 时各备份一次）并立刻 sysctl -p
+# 完：成功后删除脚本自身
 set -e
 
 CUSTOM_FILNAME=$(basename "$0")
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+if [[ "$#" -gt 0 ]]; then
+    echo "用法：$0（无参数）" >&2
+    [[ "$#" -eq 1 && ( "$1" == -h || "$1" == --help ) ]] && exit 0
+    exit 2
+fi
 echo "file name with "$CUSTOM_FILNAME
 
 LIMITNOFILE=1048576
@@ -89,4 +102,10 @@ optimize_sysctl_conf() {
     sysctl -p >/dev/null
 }
 
-optimize_limits_conf && wait && optimize_sysctl_conf && wait && echo "Optimization NetWork Complete" && wait && rm -rf $CUSTOM_FILNAME
+optimize_limits_conf
+wait
+optimize_sysctl_conf
+wait
+echo "Optimization NetWork Complete"
+wait
+rm -rf -- "$SCRIPT_DIR/$CUSTOM_FILNAME"
